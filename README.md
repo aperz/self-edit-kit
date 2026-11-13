@@ -62,8 +62,7 @@ pull request that holds anything but the entry's own files.
      Sveltia CMS Authenticator Worker. GitHub has no browser-only (PKCE)
      login yet.
 6. Claude: install the Claude GitHub app on the repo from claude.ai/code.
-7. Live client site: add to `~/Projects/nubaraOS/site-watch/sites.conf` +
-   `clients.toml`.
+7. Live client site: add it to uptime/site monitoring.
 
 ## Demo script
 
