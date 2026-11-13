@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "deny": [
+      "Edit(/site/assets/consent.js)",
+      "Edit(/site/assets/style.css)",
+      "Edit(/site/dziekuje/**)",
+      "Edit(/site/polityka-prywatnosci.html)",
+      "Edit(/site/assets/wzornik-splotow.pdf)",
+      "Edit(/checks/**)",
+      "Edit(/.github/**)",
+      "Edit(/.claude/**)",
+      "Edit(/.githooks/**)",
+      "Edit(/CLAUDE.md)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push origin main:*)",
+      "Bash(git push origin HEAD:main:*)",
+      "Bash(git config:*)",
+      "WebFetch",
+      "WebSearch"
+    ]
+  }
+}

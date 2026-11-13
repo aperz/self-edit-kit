@@ -1,0 +1,19 @@
+# The gate in front of the live site. Branch protection on main lists the
+# "site-checks" job as required, so a pull request can't be merged while it
+# fails — whoever (or whatever) wrote the change.
+name: checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  site-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 checks/check_site.py

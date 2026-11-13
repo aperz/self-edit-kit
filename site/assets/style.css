@@ -1,0 +1,51 @@
+/* Look of the whole site. Protected: content edits never need to touch this file. */
+:root {
+  --bg: #f6f1e8;
+  --ink: #2f2a24;
+  --muted: #6b6157;
+  --accent: #8a5a3c;
+  --card: #fffaf2;
+  --line: #e2d7c6;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 18px/1.6 Georgia, "Times New Roman", serif;
+}
+h1, h2, h3 { line-height: 1.2; font-weight: normal; }
+a { color: var(--accent); }
+img { max-width: 100%; height: auto; border-radius: 8px; }
+
+.hero { padding: 72px 16px 56px; text-align: center; border-bottom: 1px solid var(--line); }
+.hero h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); margin: 0 0 12px; }
+.lead { max-width: 36em; margin: 0 auto 28px; color: var(--muted); }
+
+main { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+main.narrow { max-width: 680px; padding: 56px 16px; }
+section { padding: 48px 0; border-bottom: 1px solid var(--line); }
+
+.button {
+  display: inline-block; padding: 12px 22px; border-radius: 999px;
+  background: var(--accent); color: #fff; text-decoration: none;
+}
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; }
+.price { font-size: 1.4rem; color: var(--accent); margin-bottom: 0; }
+.dates { padding-left: 1.2em; }
+.dates li { margin: 8px 0; }
+
+footer { text-align: center; padding: 32px 16px; color: var(--muted); font-size: .9rem; }
+
+/* Consent banner (markup injected by consent.js). */
+.consent {
+  position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 10;
+  max-width: 640px; margin: 0 auto; padding: 16px 20px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.12); font-size: .95rem;
+}
+.consent p { margin: 0 0 12px; }
+.consent button { font: inherit; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--accent); cursor: pointer; margin-right: 8px; }
+.consent .yes { background: var(--accent); color: #fff; }
+.consent .no { background: transparent; color: var(--accent); }

@@ -1,0 +1,11 @@
+# With "Require review from Code Owners" on main, a PR touching any of these
+# needs the owner's approval; pure content edits (site/index.html, site/img/)
+# don't. Replace OWNER with the GitHub username before the first push.
+/site/assets/                 @OWNER
+/site/dziekuje/               @OWNER
+/site/polityka-prywatnosci.html @OWNER
+/checks/                      @OWNER
+/.github/                     @OWNER
+/.claude/                     @OWNER
+/.githooks/                   @OWNER
+/CLAUDE.md                    @OWNER
