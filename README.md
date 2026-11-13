@@ -1,57 +1,81 @@
 # self-edit-kit
 
-Starter repo for a client site the **client edits herself through Claude Code
-on the web** (claude.ai/code, her own Pro plan). Sample client: fictional
-"Pracownia Osnowa". Status: **pilot — tested by Aleksandra on her own
-account first**, not yet used with a real client.
+Starter repo for a client site the **client edits herself**, through two
+doors that end in the same place:
 
-## How it works
+1. **Editor** at `/admin/` ([Sveltia CMS](https://sveltiacms.app), pinned
+   0.253.2): a Polish form over `content/strona.json`.
+2. **Claude Code on the web** (claude.ai/code, her own Pro plan): "dodaj
+   termin 23 stycznia" → Claude edits the same JSON file.
 
-The client asks Claude, in Polish, for a content change. Claude edits on a
-`claude/…` branch and opens a pull request. The hosting posts a preview link
-on the PR, she checks the preview, presses Merge, and `main` deploys live.
+Either way the change becomes a pull request with a Netlify preview, and
+publishing it means merging it into `main`, which only works once the checks
+pass. Sample client: fictional "Pracownia Osnowa". Status: **demo on
+Aleksandra's own GitHub account (aperz)**.
 
-Safety doesn't rely on Claude behaving. The layers, weakest to strongest:
+## Layout
 
-| Layer | File | Stops |
+| Path | What | Who edits |
 |---|---|---|
-| Instructions | `CLAUDE.md` | Claude knows what counts as content and what to hand back to Aleksandra |
-| Permission denies | `.claude/settings.json` | Claude's Edit/Write tools on protected files, force/main pushes |
-| Checks | `checks/check_site.py` | protected files changed by any route (hash manifest), extra scripts/trackers/embeds, broken links/anchors, missing alt, >500 KB images, missing consent/legal links |
-| Branch protection | GitHub settings | merging while checks fail; touching protected paths without owner review (`CODEOWNERS`) |
+| `content/strona.json` | all texts, prices, dates, contact | client (editor or Claude) |
+| `site/img/uploads/` | uploaded photos | client |
+| `templates/index.html` | page layout with `{{ placeholders }}` | owner |
+| `build.py` | renders template + content + `site/` → `public/`; validates content | owner |
+| `site/` | static files: styles, consent banner, thank-you page, privacy policy, `/admin/` | owner |
+| `checks/check_site.py` | the gate: checks the built site + protected-file manifest | owner |
 
-`python3 checks/check_site.py` is the single check command. It runs in CI and
-in `.githooks/pre-commit`. After changing a protected file on purpose, re-pin it
-with `python3 checks/check_site.py --update-manifest`.
+`python3 build.py && python3 checks/check_site.py` is the single check
+command: the CI job `site-checks`, Netlify's build command and the
+pre-commit hook (`git config core.hooksPath .githooks`). After changing a
+protected file on purpose: `python3 checks/check_site.py --update-manifest`.
 
-## Setup per site
+## Safety layers
 
-1. **GitHub repo.** Branch protection needs a public repo or GitHub Pro. A
-   public repo is fine for a static site (nothing secret lives here).
-2. Replace `@OWNER` in `.github/CODEOWNERS`, then run `--update-manifest` and
-   commit.
-3. **Branch protection on `main`:** require a pull request, require status
-   check `site-checks`, require review from Code Owners, block force pushes.
-   Don't require approvals on every PR: content PRs should be mergeable by
-   her alone.
-4. **Cloudflare Pages:** connect the repo, no build command, output dir
-   `site`, production branch `main`. Preview deployments for PRs are on by
-   default.
-5. **Client access:** she gets a GitHub account plus write access, signs in
-   to claude.ai/code with GitHub, and the Claude GitHub app is installed on
-   the repo. *(Verify during the pilot: whether a collaborator can use a repo
-   where the owner installed the app, or whether the repo should live in an
-   org she's a member of.)*
-6. Custom domain on Cloudflare, then add the site to
-   `~/Projects/nubaraOS/site-watch/sites.conf` + `clients.toml`.
-7. Give her `JAK-EDYTOWAC.md`.
+| Layer | Where | Stops |
+|---|---|---|
+| Form limits | `site/admin/config.yml` | wrong types, over-long texts, oversized photos (shrunk to WebP ≤1600 px) |
+| Instructions + denies | `CLAUDE.md`, `.claude/settings.json` | Claude touching anything but content |
+| Content validation | `build.py` | empty fields, price as text, bad dates/emails, `javascript:` links; HTML always escaped |
+| Checks | `checks/check_site.py` | changed protected files (hash manifest), extra scripts/embeds, broken links, missing alt, >500 KB images, missing consent/legal links |
+| Ruleset on `main` | GitHub | merging without a PR or with failing `site-checks`; protected paths without owner review (`CODEOWNERS`) |
+| Netlify build | `netlify.toml` | a broken build ever going live: production keeps the last good deploy |
 
-## Pilot test plan (own account)
+The editor's own publish check adds one more: Sveltia refuses to publish a
+pull request that holds anything but the entry's own files.
 
-- [ ] Content edit: "dodaj termin 23 stycznia, warsztat jednodniowy" → PR, preview, merge, live
-- [ ] Photo swap from the phone app
-- [ ] Forbidden ask: "zmień kolor przycisku na zielony" → Claude declines, nothing changed
-- [ ] Forbidden ask: "dodaj film z YouTube" → declines; if forced, CI fails
-- [ ] Deny rule: "edytuj consent.js" → Edit refused by permissions (confirms the `/path` rule syntax)
-- [ ] Merge blocked while a check fails
-- [ ] Note: as PR author you can't approve your own CODEOWNERS PR — use admin bypass for the test
+## Setup (per site)
+
+1. Public repo (rulesets are free on public repos; private needs GitHub Pro).
+2. Repo settings: allow auto-merge, delete branches after merge.
+3. Rulesets on `main`:
+   - **checks** (no bypass): require status check `site-checks`, block
+     force-push and deletion.
+   - **review**: require a pull request, 0 approvals, code-owner review;
+     the repository admin may bypass (so the owner can merge her own changes
+     to protected files).
+4. Netlify: import the repo; `netlify.toml` sets the build. Deploy previews
+   on PRs are on by default. Then update `site_url` in `site/admin/config.yml`.
+5. Editor sign-in:
+   - demo / owner: "Sign In with Token" — fine-grained PAT for this repo
+     only, Contents + Pull requests read/write;
+   - client: OAuth through Netlify (Netlify as OAuth provider) or the
+     Sveltia CMS Authenticator Worker. GitHub has no browser-only (PKCE)
+     login yet.
+6. Claude: install the Claude GitHub app on the repo from claude.ai/code.
+7. Live client site: add to `~/Projects/nubaraOS/site-watch/sites.conf` +
+   `clients.toml`.
+
+## Demo script
+
+- [ ] Editor: change the price → Save → PR `cms/strona/glowna` + Netlify preview → Publikuj → waits for checks → live
+- [ ] Editor: upload a large photo → shrunk to WebP, under 500 KB
+- [ ] Claude: "dodaj termin 23 stycznia, warsztat jednodniowy" → PR → preview → Merge → live
+- [ ] Claude, forbidden: "zmień kolor przycisku na zielony" → declines
+- [ ] Claude, forced: edit `templates/index.html` → denied by permissions; if pushed anyway, `site-checks` fails and the merge is blocked
+- [ ] Bad content (price as text) via Claude → build fails, PR blocked, live site unchanged
+
+## Open questions for real clients
+
+- Collaborator + Claude app: can a client with Write access use Claude on a
+  repo where the owner installed the app, or does it need an organization?
+- Netlify-as-OAuth-provider vs the Worker for the editor sign-in.

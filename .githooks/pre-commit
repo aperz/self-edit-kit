@@ -1,4 +1,4 @@
 #!/bin/sh
-# Same gate as CI, before the commit even exists. Enable once per clone:
+# Same gate as CI and Netlify, before the commit even exists. Enable once per clone:
 #   git config core.hooksPath .githooks
-exec python3 checks/check_site.py
+python3 build.py && exec python3 checks/check_site.py

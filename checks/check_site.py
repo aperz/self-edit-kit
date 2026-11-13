@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 """Site checks: the one command that decides whether a change may go live.
 
-Runs in GitHub Actions on every pull request (a required check, so a failing
-run blocks the merge into main) and in the local pre-commit hook. Standard
-library only, so CI needs no install step.
+Runs in GitHub Actions on every pull request (the required "site-checks"
+job, so a failing run blocks the merge into main), as Netlify's build step
+(a failing run fails the deploy, so the live site keeps its last good
+version) and in the local pre-commit hook. Standard library only.
 
-    python3 checks/check_site.py                    # run all checks
-    python3 checks/check_site.py --update-manifest  # owner only: re-pin protected files
+    python3 build.py && python3 checks/check_site.py  # build, then check
+    python3 checks/check_site.py --update-manifest    # owner only: re-pin protected files
+
+It checks the BUILT site in public/, i.e. exactly what would be served,
+plus the hash manifest of protected source files. Content validation itself
+(field lengths, prices, dates) lives in build.py, which refuses to build.
 
 Messages are in Polish because the client may read them in the PR. Errors
 (✗) fail the run; warnings (!) are printed but don't block.
@@ -21,8 +26,13 @@ from pathlib import Path
 from urllib.parse import urlsplit, unquote
 
 ROOT = Path(__file__).resolve().parent.parent
-SITE = ROOT / "site"
+SITE = ROOT / "public"  # the built output, see build.py
 MANIFEST = ROOT / "checks" / "protected.sha256"
+
+# The editor page loads Sveltia from a CDN and is never shown to visitors
+# (noindex). The visitor-page rules (consent, no third-party scripts) don't
+# apply to it; its source is protected by the manifest instead.
+EXEMPT_DIRS = {"admin"}
 
 # Pages whose URLs other systems depend on (newsletter automation, uptime
 # monitoring, links in sent emails). They must always exist.
@@ -37,6 +47,11 @@ REQUIRED = [
 # them takes the owner (CODEOWNERS review + --update-manifest). Paths are
 # relative to the repo root.
 PROTECTED = [
+    "templates/index.html",
+    "build.py",
+    "netlify.toml",
+    "site/admin/index.html",
+    "site/admin/config.yml",
     "site/assets/consent.js",
     "site/assets/style.css",
     "site/dziekuje/index.html",
@@ -46,6 +61,7 @@ PROTECTED = [
     ".github/workflows/checks.yml",
     ".github/CODEOWNERS",
     ".claude/settings.json",
+    ".githooks/pre-commit",
     "CLAUDE.md",
 ]
 
@@ -133,9 +149,12 @@ def check() -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
 
+    if not (SITE / "index.html").is_file():
+        return [f"Brak zbudowanej strony w public/ — najpierw uruchom python3 build.py."], []
+
     for rel in REQUIRED:
         if not (SITE / rel).is_file():
-            errors.append(f"Brakuje wymaganego pliku site/{rel} — ten adres musi istnieć.")
+            errors.append(f"Brakuje wymaganego pliku {rel} — ten adres musi istnieć.")
 
     pinned = load_manifest()
     for rel in PROTECTED:
@@ -145,7 +164,8 @@ def check() -> tuple[list[str], list[str]]:
         elif pinned.get(rel) != sha256(f):
             errors.append(f"Zmieniono chroniony plik {rel} — to zmiana dla Aleksandry, nie treści.")
 
-    pages = sorted(SITE.rglob("*.html"))
+    pages = sorted(p for p in SITE.rglob("*.html")
+                   if p.relative_to(SITE).parts[0] not in EXEMPT_DIRS)
     parsed: dict[Path, Page] = {}
     for p in pages:
         pg = Page()

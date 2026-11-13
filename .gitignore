@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
 .DS_Store
+# Built output (build.py); Netlify and CI build it themselves.
+public/

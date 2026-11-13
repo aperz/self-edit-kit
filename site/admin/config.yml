@@ -1,0 +1,124 @@
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms@0.253.2/schema/sveltia-cms.json
+#
+# Editor configuration. PROTECTED: only the owner changes it.
+#
+# Every save opens its own pull request (publish_mode: preview), Netlify
+# builds a preview of it, and "Publikuj" merges it. main requires the
+# site-checks job, so the editor's Publish waits for the checks (auto-merge)
+# and refuses to publish a change that fails them.
+#
+# The fields mirror build.py's validation (lengths, price as a number, dates),
+# so most mistakes are caught in the form before they ever reach CI.
+
+backend:
+  name: github
+  repo: aperz/self-edit-kit
+  branch: main
+  commit_messages:
+    create: "Edytor: nowy wpis {{collection}} „{{slug}}”"
+    update: "Edytor: zmiana {{collection}} „{{slug}}”"
+    delete: "Edytor: usunięto {{collection}} „{{slug}}”"
+    uploadMedia: "Edytor: nowe zdjęcie {{path}}"
+    deleteMedia: "Edytor: usunięto zdjęcie {{path}}"
+
+publish_mode: preview
+
+site_url: https://self-edit-kit.netlify.app
+display_url: https://self-edit-kit.netlify.app
+
+media_folder: /site/img/uploads
+public_folder: /img/uploads
+
+media_libraries:
+  default:
+    config:
+      max_file_size: 512000  # 500 KB, same limit as the checks
+      slugify_filename: true
+      transformations:
+        raster_image:
+          format: webp
+          quality: 82
+          width: 1600
+          height: 1600
+
+collections:
+  - name: strona
+    label: Strona
+    description: Teksty, ceny i terminy na stronie głównej.
+    files:
+      - name: glowna
+        label: Strona główna
+        file: content/strona.json
+        format: json
+        fields:
+          - name: hero
+            label: Nagłówek strony
+            widget: object
+            fields:
+              - { name: title, label: Tytuł, widget: string, maxlength: 80 }
+              - { name: lead, label: Podtytuł, widget: text, maxlength: 300 }
+              - { name: button, label: Napis na przycisku, widget: string, maxlength: 30 }
+
+          - name: o_mnie
+            label: O mnie
+            widget: object
+            fields:
+              - { name: heading, label: Nagłówek, widget: string, maxlength: 60 }
+              - { name: photo, label: Zdjęcie, widget: image, hint: "Do 500 KB. Zostanie zmniejszone automatycznie." }
+              - { name: photo_alt, label: Opis zdjęcia (dla osób niewidomych), widget: string, maxlength: 200 }
+              - name: text
+                label: Tekst
+                widget: text
+                maxlength: 2000
+                hint: "Pusta linia = nowy akapit. **pogrubienie**, [tekst linku](https://adres)."
+
+          - name: oferta
+            label: Oferta
+            widget: object
+            fields:
+              - { name: heading, label: Nagłówek, widget: string, maxlength: 60 }
+              - name: cards
+                label: Karty oferty
+                label_singular: karta
+                widget: list
+                min: 1
+                max: 6
+                summary: "{{fields.title}} — {{fields.price}} zł"
+                fields:
+                  - { name: title, label: Nazwa, widget: string, maxlength: 80 }
+                  - { name: text, label: Opis, widget: text, maxlength: 400 }
+                  - { name: price, label: Cena (zł brutto), widget: number, value_type: int, min: 1, max: 100000 }
+
+          - name: terminy
+            label: Terminy
+            widget: object
+            fields:
+              - { name: heading, label: Nagłówek, widget: string, maxlength: 60 }
+              - name: items
+                label: Terminy
+                label_singular: termin
+                widget: list
+                summary: "{{fields.date}} — {{fields.text}}"
+                hint: "Kolejność nie ma znaczenia — strona sama ułoży terminy od najbliższego."
+                fields:
+                  - { name: date, label: Data, widget: datetime, time_format: false, format: "YYYY-MM-DD" }
+                  - { name: end_date, label: "Data końca (tylko dla kilkudniowych)", widget: datetime, time_format: false, format: "YYYY-MM-DD", required: false }
+                  - { name: text, label: Opis, widget: string, maxlength: 200 }
+
+          - name: kontakt
+            label: Kontakt
+            widget: object
+            fields:
+              - { name: heading, label: Nagłówek, widget: string, maxlength: 60 }
+              - { name: text, label: Tekst, widget: text, maxlength: 500, required: false }
+              - { name: email, label: E-mail, widget: string, pattern: ['^[^@\s]+@[^@\s]+\.[^@\s]+$', "Wpisz poprawny adres e-mail"] }
+              - { name: phone, label: Telefon, widget: string, pattern: ['^\+?[0-9 ]{9,15}$', "Same cyfry i spacje"] }
+              - { name: address, label: Adres, widget: string, maxlength: 120 }
+
+          - name: seo
+            label: Wyszukiwarki (Google)
+            widget: object
+            collapsed: true
+            fields:
+              - { name: title, label: Tytuł w wynikach wyszukiwania, widget: string, maxlength: 70 }
+              - { name: description, label: Opis w wynikach wyszukiwania, widget: text, maxlength: 170 }

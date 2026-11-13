@@ -1,11 +1,16 @@
-# With "Require review from Code Owners" on main, a PR touching any of these
-# needs the owner's approval; pure content edits (site/index.html, site/img/)
-# don't. Replace OWNER with the GitHub username before the first push.
-/site/assets/                 @OWNER
-/site/dziekuje/               @OWNER
-/site/polityka-prywatnosci.html @OWNER
-/checks/                      @OWNER
-/.github/                     @OWNER
-/.claude/                     @OWNER
-/.githooks/                   @OWNER
-/CLAUDE.md                    @OWNER
+# Pull requests touching these paths need the owner's approval (the ruleset
+# on main requires code-owner review). Content edits — content/strona.json and
+# site/img/uploads/ — are not listed, so the editor's and Claude's content
+# PRs only need the checks to pass.
+/templates/                     @aperz
+/build.py                       @aperz
+/netlify.toml                   @aperz
+/site/admin/                    @aperz
+/site/assets/                   @aperz
+/site/dziekuje/                 @aperz
+/site/polityka-prywatnosci.html @aperz
+/checks/                        @aperz
+/.github/                       @aperz
+/.claude/                       @aperz
+/.githooks/                     @aperz
+/CLAUDE.md                      @aperz

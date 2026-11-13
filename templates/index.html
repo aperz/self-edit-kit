@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ seo.title }}</title>
+  <meta name="description" content="{{ seo.description }}">
+  <link rel="stylesheet" href="assets/style.css">
+  <!-- Cookie consent + Meta Pixel. Protected: keep this tag. -->
+  <script src="assets/consent.js" defer></script>
+</head>
+<body>
+
+<!--
+  Page layout. PROTECTED: only Aleksandra changes this file.
+  Every {{ … }} is filled from content/strona.json by build.py. The texts are
+  edited there (by the editor at /admin/ or by Claude), never here.
+-->
+
+<header class="hero">
+  <h1>{{ hero.title }}</h1>
+  <p class="lead">{{ hero.lead }}</p>
+  <a class="button" href="#terminy">{{ hero.button }}</a>
+</header>
+
+<main>
+
+  <section id="o-mnie">
+    <h2>{{ o_mnie.heading }}</h2>
+    {{ o_mnie.photo_html }}
+    {{ o_mnie.text_html }}
+  </section>
+
+  <section id="oferta">
+    <h2>{{ oferta.heading }}</h2>
+    <div class="cards">
+{{ oferta.cards_html }}
+    </div>
+  </section>
+
+  <section id="terminy">
+    <h2>{{ terminy.heading }}</h2>
+    <ul class="dates">
+{{ terminy.items_html }}
+    </ul>
+  </section>
+
+  <section id="kontakt">
+    <h2>{{ kontakt.heading }}</h2>
+    {{ kontakt.text_html }}
+    <p>E-mail: {{ kontakt.email_html }}<br>Telefon: {{ kontakt.phone_html }}</p>
+    <p>{{ kontakt.address }}</p>
+  </section>
+
+</main>
+
+<footer>
+  <p><a href="polityka-prywatnosci.html">Polityka prywatności</a> · <a href="#" data-consent-open>Ustawienia cookies</a></p>
+</footer>
+
+</body>
+</html>

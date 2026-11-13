@@ -1,11 +1,14 @@
 {
   "permissions": {
     "deny": [
-      "Edit(/site/assets/consent.js)",
-      "Edit(/site/assets/style.css)",
+      "Edit(/templates/**)",
+      "Edit(/build.py)",
+      "Edit(/netlify.toml)",
+      "Edit(/public/**)",
+      "Edit(/site/admin/**)",
+      "Edit(/site/assets/**)",
       "Edit(/site/dziekuje/**)",
       "Edit(/site/polityka-prywatnosci.html)",
-      "Edit(/site/assets/wzornik-splotow.pdf)",
       "Edit(/checks/**)",
       "Edit(/.github/**)",
       "Edit(/.claude/**)",

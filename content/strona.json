@@ -1,0 +1,59 @@
+{
+  "hero": {
+    "title": "Pracownia Osnowa",
+    "lead": "Kameralne warsztaty tkackie we Wrocławiu. Przychodzisz z pustymi rękami, wychodzisz z własną tkaniną.",
+    "button": "Zobacz terminy"
+  },
+  "o_mnie": {
+    "heading": "O mnie",
+    "photo": "/img/warsztat.svg",
+    "photo_alt": "Krosno z rozpoczętą tkaniną w pracowni",
+    "text": "Tkam od dwunastu lat. Prowadzę warsztaty w małych grupach, bo przy krośnie najwięcej daje spokojna, uważna obecność — moja i Twoja."
+  },
+  "oferta": {
+    "heading": "Oferta",
+    "cards": [
+      {
+        "title": "Warsztat jednodniowy",
+        "text": "Sobota, 10:00–16:00. Poznasz podstawy splotu płóciennego i utkasz małą makatkę.",
+        "price": 290
+      },
+      {
+        "title": "Kurs weekendowy",
+        "text": "Sobota i niedziela. Od nawijania osnowy do zdjęcia gotowej tkaniny z krosna.",
+        "price": 540
+      }
+    ]
+  },
+  "terminy": {
+    "heading": "Najbliższe terminy",
+    "items": [
+      {
+        "date": "2026-12-05",
+        "end_date": "",
+        "text": "warsztat jednodniowy (zostały 3 miejsca)"
+      },
+      {
+        "date": "2026-12-12",
+        "end_date": "2026-12-13",
+        "text": "kurs weekendowy"
+      },
+      {
+        "date": "2027-01-16",
+        "end_date": "",
+        "text": "warsztat jednodniowy"
+      }
+    ]
+  },
+  "kontakt": {
+    "heading": "Zapisy i kontakt",
+    "text": "Napisz albo zadzwoń — odpowiadam zwykle tego samego dnia.",
+    "email": "kontakt@example.com",
+    "phone": "500 000 000",
+    "address": "ul. Przykładowa 1, Wrocław"
+  },
+  "seo": {
+    "title": "Pracownia Osnowa — warsztaty tkackie we Wrocławiu",
+    "description": "Kameralne warsztaty tkackie dla początkujących. Małe grupy, naturalne przędze, krosna na miejscu."
+  }
+}

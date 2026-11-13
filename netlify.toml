@@ -1,0 +1,12 @@
+# Netlify: build the site, then run the same checks as CI. A failing check
+# fails the deploy, so production keeps serving its last good version even if
+# a bad change ever reached main. PROTECTED file.
+[build]
+  command = "python3 build.py && python3 checks/check_site.py"
+  publish = "public"
+
+# The editor never belongs in search results.
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
