@@ -59,6 +59,7 @@ PROTECTED = [
     "site/assets/wzornik-splotow.pdf",
     "checks/check_site.py",
     ".github/workflows/checks.yml",
+    ".github/workflows/pages.yml",
     ".github/CODEOWNERS",
     ".claude/settings.json",
     ".githooks/pre-commit",

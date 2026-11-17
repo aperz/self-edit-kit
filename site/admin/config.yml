@@ -23,8 +23,8 @@ backend:
 
 publish_mode: preview
 
-site_url: https://self-edit-kit.netlify.app
-display_url: https://self-edit-kit.netlify.app
+site_url: https://aperz.github.io/self-edit-kit/
+display_url: https://aperz.github.io/self-edit-kit/
 
 media_folder: /site/img/uploads
 public_folder: /img/uploads

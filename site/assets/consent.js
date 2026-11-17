@@ -8,6 +8,11 @@
 // script from this visit is gone too.
 (function () {
   var KEY = "consent-v1";
+  // Site root, worked out from this script's own URL (…/assets/consent.js),
+  // so links work whether the site sits at a domain root or in a subfolder
+  // (e.g. a GitHub Pages project site), and from any page depth.
+  var ROOT = (document.currentScript && document.currentScript.src || "/assets/consent.js")
+    .replace(/assets\/consent\.js(\?.*)?$/, "");
   var PIXEL_ID = "000000000000000"; // placeholder — the real ID goes in per client
 
   function read() {
@@ -37,7 +42,7 @@
     box.setAttribute("aria-label", "Zgoda na pliki cookies");
     box.innerHTML =
       '<p>Używam plików cookies (piksel Meta), żeby mierzyć skuteczność reklam. Wczytam je tylko za Twoją zgodą. ' +
-      'Szczegóły w <a href="/polityka-prywatnosci.html">polityce prywatności</a>.</p>' +
+      'Szczegóły w <a href="' + ROOT + 'polityka-prywatnosci.html">polityce prywatności</a>.</p>' +
       '<button class="yes" type="button">Akceptuję</button>' +
       '<button class="no" type="button">Tylko niezbędne</button>';
     box.querySelector(".yes").onclick = function () { write("yes"); box.remove(); loadPixel(); };

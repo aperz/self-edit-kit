@@ -1,0 +1,33 @@
+# Publish main to GitHub Pages: https://aperz.github.io/self-edit-kit/
+# Same build + checks as CI and Netlify; if they fail, nothing is published
+# and the previous version stays online. Only main is published (no PR
+# previews; those come from Netlify). PROTECTED file.
+name: pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write      # allowed to publish the site
+  id-token: write   # proves to Pages that this run comes from this repo
+concurrency:
+  group: pages
+  cancel-in-progress: false  # an older build never overwrites a newer one
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 build.py && python3 checks/check_site.py
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - id: deploy
+        uses: actions/deploy-pages@v4
