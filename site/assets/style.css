@@ -49,3 +49,26 @@ footer { text-align: center; padding: 32px 16px; color: var(--muted); font-size:
 .consent button { font: inherit; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--accent); cursor: pointer; margin-right: 8px; }
 .consent .yes { background: var(--accent); color: #fff; }
 .consent .no { background: transparent; color: var(--accent); }
+
+/* Blog: list at /blog/ and post pages (templates/pages/blog.njk, templates/layouts/post.njk). */
+.topbar { max-width: 680px; margin: 0 auto; padding: 20px 16px 0; font-size: .95rem; color: var(--muted); }
+.topbar a { text-decoration: none; }
+.post-date { margin: 0 0 4px; color: var(--muted); font-size: .9rem; }
+.blog h1, .post h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); margin: 0 0 24px; }
+.post-card {
+  display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: start;
+  padding: 24px 0; border-bottom: 1px solid var(--line);
+}
+.post-card img { display: block; aspect-ratio: 3 / 2; object-fit: cover; width: 100%; }
+.post-card h2 { margin: 0 0 8px; font-size: 1.4rem; }
+.post-card h2 a { color: var(--ink); text-decoration: none; }
+.post-card h2 a:hover { color: var(--accent); }
+.post-card p { margin: 0; }
+@media (max-width: 560px) { .post-card { grid-template-columns: 1fr; } }
+.post .cover { display: block; width: 100%; margin: 0 0 28px; }
+.post-body h2 { margin-top: 1.6em; }
+.post-body blockquote {
+  margin: 1.4em 0; padding: 4px 20px; border-left: 3px solid var(--accent);
+  background: var(--card); color: var(--muted); font-style: italic;
+}
+.post-body li { margin: 4px 0; }

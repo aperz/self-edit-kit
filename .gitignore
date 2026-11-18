@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
 .DS_Store
-# Built output (build.py); Netlify and CI build it themselves.
+# Built output (Eleventy); Netlify and CI build it themselves.
 public/
+node_modules/

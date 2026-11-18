@@ -11,11 +11,19 @@ with a one-line explanation of why, and nothing else.
 
 ## Where the content lives
 
-All texts, prices, dates and contact details are in **`content/strona.json`**.
-This is the only page-content file you edit. The same file is edited by the
-online editor at `/admin/`, so keep its structure exactly: same keys, same
-order, same types. The page itself (`templates/index.html`) is built from it
-by `build.py`; never edit the template or the built `public/` folder.
+Two places, and only these two:
+
+- **`content/strona.json`**: all texts, prices, dates and contact details of
+  the home page.
+- **`content/blog/`**: the blog, one Markdown file per post (see "Blog
+  posts" below).
+
+The same files are edited by the online editor at `/admin/`, so keep their
+structure exactly: in `strona.json` the same keys, same order, same types.
+The pages are built from them by Eleventy with the layouts in `templates/`;
+never edit the templates, `eleventy.config.js` or the built `public/` folder.
+
+In `content/strona.json`:
 
 - `hero` — title, subtitle (`lead`), button label
 - `o_mnie` — heading, `photo` (path like `/img/uploads/nazwa.webp`),
@@ -34,14 +42,65 @@ and `kontakt.text` a blank line starts a new paragraph. Headings, titles and
 the hero subtitle are plain text. Anything else, including HTML, shows up as
 literal characters.
 
-Photos go into `site/img/uploads/`, under 500 KB, file names lowercase without
-Polish letters or spaces. If her photo is bigger, ask her for a smaller one or
-suggest uploading it through the editor (it shrinks photos automatically).
+Photos go into `site/img/uploads/` (home page) or `site/img/blog/` (blog
+posts), under 500 KB, file names lowercase without Polish letters or spaces.
+If her photo is bigger, ask her for a smaller one or suggest uploading it
+through the editor (it shrinks photos automatically).
+
+## Blog posts
+
+One file per post: `content/blog/<adres>.md`. The file name is the post's
+address (`/blog/<adres>/`): lowercase, no Polish letters, words joined with
+hyphens, made from the title (`Wełna czy len?` → `welna-czy-len.md`).
+Nothing else may be in that folder (no subfolders, no other file types).
+
+The file starts with exactly these five fields between `---` lines, each on
+one line, each value in double quotes, and nothing else in the header:
+
+```
+---
+title: "Wełna czy len? Jak wybrać przędzę"
+date: "2026-11-17"
+excerpt: "Jedno–dwa zdania na liście wpisów i w Google."
+cover: "/img/blog/welna.webp"
+cover_alt: "Motki wełny i lnu na drewnianym stole"
+---
+```
+
+- `title` ≤ 100 characters, `excerpt` ≤ 300, `cover_alt` ≤ 200 (a real
+  description of the photo, in Polish).
+- `date` is `RRRR-MM-DD`; the list shows the newest post first.
+- `cover` is a photo in `site/img/blog/` written as `/img/blog/name.webp`;
+  the file must exist.
+- Inside a value, write `\"` for a double quote.
+
+After the header comes the text, in Markdown. Allowed: `## Heading` and
+`### Subheading` (not `#`, the title is the page heading), `**bold**`,
+`*italic*`, lists (`- ` and `1. `), quotes (`> `), links to other sites
+(`[text](https://…)`) or to an e-mail (`[text](mailto:…)`), and photos from
+the site: `![description](/img/blog/name.webp)`. A blank line starts a new
+paragraph.
+
+Not allowed, and the build refuses it: any HTML (`<iframe>`, `<script>`,
+`<div>`…), embeds (YouTube, Instagram, maps, forms), links that aren't
+`https://` or `mailto:`, photos from other sites, tables, code blocks, and
+extra header fields (`permalink`, `layout`, `tags`…). Links to pages of
+this site aren't supported in posts yet; mention the page in words instead.
+If she asks for any of these, it's "zmiana dla Aleksandry".
+
+To change a post, edit its file; to remove one, delete its file (and its
+photos in `site/img/blog/` if no other post uses them). Renaming a file
+changes the post's address, so old links to it stop working: ask her first.
+
+If she gives you a text, keep her words. Fix obvious typos, add headings or
+lists only if she asks or agrees, and show her the text before publishing
+if you changed more than a few words.
 
 ## What you must not change (say it's for Aleksandra)
 
 - layout, colours, fonts, spacing, new sections or pages: `templates/`,
-  `site/assets/`, `build.py`
+  `site/assets/`, `eleventy.config.js`, `package.json`, `package-lock.json`
+  (no new npm packages, no `npm install`)
 - `site/assets/consent.js`, the cookie banner, the footer links (privacy
   policy, cookie settings) — this is legal compliance (RODO)
 - `site/dziekuje/` and `site/assets/wzornik-splotow.pdf` — the newsletter
@@ -58,13 +117,17 @@ Aleksandra.
 
 ## How every change goes
 
-1. Edit `content/strona.json` (and add photos if needed).
-2. Run `python3 build.py && python3 checks/check_site.py`. If it reports errors
-   (✗), fix your own change until it passes. If it fails because of something
-   she asked for that's on the forbidden list, undo that part and tell her.
+1. Edit `content/strona.json` or a post in `content/blog/` (and add photos
+   if needed).
+2. Once per session run `npm ci` (installs the pinned site builder), then
+   `python3 checks/validate_content.py && npx --no @11ty/eleventy && python3 checks/check_site.py`.
+   If it reports errors (✗), fix your own change until it passes. If it
+   fails because of something she asked for that's on the forbidden list,
+   undo that part and tell her.
 3. Commit with a short Polish message describing the content change
-   (e.g. `Nowy termin: 16 stycznia`). Work on your branch and open a pull
-   request to `main`; never push to `main` directly.
+   (e.g. `Nowy termin: 16 stycznia`, `Nowy wpis: Wełna czy len?`). Work on
+   your branch and open a pull request to `main`; never push to `main`
+   directly.
 4. Tell her the change is ready as a **podgląd** (preview): the preview link
    appears on the pull request within a minute or two (Netlify posts it). She
    opens it, checks it on her phone too, and then presses **Merge** — that
@@ -73,6 +136,6 @@ Aleksandra.
 Warnings (!) from the check, like a date that has passed, don't block. Mention
 them to her in one line.
 
-If the editor has an unpublished draft of the page (an open pull request from
-a `cms/…` branch), mention it: publishing both may conflict. Suggest she
-publish or discard the draft first.
+If the editor has an unpublished draft of the same page or post (an open
+pull request from a `cms/…` branch), mention it: publishing both may
+conflict. Suggest she publish or discard the draft first.

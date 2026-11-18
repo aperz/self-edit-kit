@@ -1,0 +1,21 @@
+---
+layout: base.njk
+---
+{#-
+  One blog post. PROTECTED: only Aleksandra changes this file.
+  Every post in content/blog/ uses it (fixed in eleventy.config.js). Title,
+  date, cover and alt come from the post's front matter, already checked by
+  checks/validate_content.py; `content` is the post body, rendered by
+  markdown-it with HTML switched off, so it is the only `| safe` here.
+-#}
+<main class="narrow post">
+  <article>
+    <p class="post-date"><time datetime="{{ page.date | data_iso }}">{{ page.date | data_pl }}</time></p>
+    <h1>{{ title }}</h1>
+    <img class="cover" src="{{ cover | obraz }}" alt="{{ cover_alt }}">
+    <div class="post-body">
+{{ content | safe }}
+    </div>
+  </article>
+  <p><a href="/blog/">← Wszystkie wpisy</a></p>
+</main>

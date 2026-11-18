@@ -2,7 +2,10 @@
   "permissions": {
     "deny": [
       "Edit(/templates/**)",
-      "Edit(/build.py)",
+      "Edit(/eleventy.config.js)",
+      "Edit(/package.json)",
+      "Edit(/package-lock.json)",
+      "Edit(/node_modules/**)",
       "Edit(/netlify.toml)",
       "Edit(/public/**)",
       "Edit(/site/admin/**)",
@@ -19,6 +22,10 @@
       "Bash(git push origin main:*)",
       "Bash(git push origin HEAD:main:*)",
       "Bash(git config:*)",
+      "Bash(npm install:*)",
+      "Bash(npm i:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm update:*)",
       "WebFetch",
       "WebSearch"
     ]

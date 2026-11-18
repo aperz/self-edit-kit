@@ -1,9 +1,17 @@
-# Netlify: build the site, then run the same checks as CI. A failing check
-# fails the deploy, so production keeps serving its last good version even if
-# a bad change ever reached main. PROTECTED file.
+# Netlify: validate the content, build the site with Eleventy, then run the
+# same checks as CI. A failing step fails the deploy, so production keeps
+# serving its last good version even if a bad change ever reached main.
+# PROTECTED file.
+#
+# Netlify installs the Node dependencies itself before the build (it sees
+# package.json + package-lock.json). `npx --no` then runs exactly that pinned
+# Eleventy and refuses to download another version if it's missing.
 [build]
-  command = "python3 build.py && python3 checks/check_site.py"
+  command = "python3 checks/validate_content.py && npx --no @11ty/eleventy && python3 checks/check_site.py"
   publish = "public"
+
+[build.environment]
+  NODE_VERSION = "22"
 
 # The editor never belongs in search results.
 [[headers]]

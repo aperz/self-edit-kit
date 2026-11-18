@@ -16,4 +16,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python3 build.py && python3 checks/check_site.py
+      # Eleventy renders the site. `npm ci` installs exactly the versions in
+      # package-lock.json (and fails if it disagrees with package.json);
+      # `npx --no` never downloads anything on its own.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: python3 checks/validate_content.py && npx --no @11ty/eleventy && python3 checks/check_site.py

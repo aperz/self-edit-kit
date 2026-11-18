@@ -7,8 +7,9 @@
 # site-checks job, so the editor's Publish waits for the checks (auto-merge)
 # and refuses to publish a change that fails them.
 #
-# The fields mirror build.py's validation (lengths, price as a number, dates),
-# so most mistakes are caught in the form before they ever reach CI.
+# The fields mirror checks/validate_content.py (lengths, price as a number,
+# dates, what a blog post may contain), so most mistakes are caught in the
+# form before they ever reach CI.
 
 backend:
   name: github
@@ -29,6 +30,15 @@ display_url: https://aperz.github.io/self-edit-kit/
 media_folder: /site/img/uploads
 public_folder: /img/uploads
 
+# Slugs (blog post addresses) and uploaded file names: ASCII only, with
+# Polish letters transliterated first (clean_accents: ł→l, ą→a…), so
+# "Wełna czy len?" becomes welna-czy-len. Lowercase and hyphens between
+# words are the defaults.
+slug:
+  encoding: ascii
+  clean_accents: true
+
+# Applies to every upload, the blog's media folder included.
 media_libraries:
   default:
     config:
@@ -122,3 +132,60 @@ collections:
             fields:
               - { name: title, label: Tytuł w wynikach wyszukiwania, widget: string, maxlength: 70 }
               - { name: description, label: Opis w wynikach wyszukiwania, widget: text, maxlength: 170 }
+
+  # The blog: one Markdown file per post in content/blog/<slug>.md, shown at
+  # /blog/<slug>/. checks/validate_content.py accepts exactly these five
+  # front-matter fields plus the body; the options below keep the editor
+  # inside what it accepts.
+  - name: blog
+    label: Blog
+    label_singular: wpis
+    description: Wpisy na blogu. Najnowszy pokazuje się na górze listy.
+    folder: content/blog
+    extension: md
+    format: frontmatter
+    create: true
+    delete: true
+    # Address from the title: "Wełna czy len?" → welna-czy-len (see `slug`
+    # at the top). The pattern is the same rule the validator applies to
+    # file names.
+    slug:
+      template: "{{title}}"
+      pattern: ['^[a-z0-9]+(-[a-z0-9]+)*$', "Tylko małe litery bez polskich znaków, cyfry i myślniki"]
+    slug_length: 60
+    preview_path: /blog/{{slug}}/
+    # Double-quote every front-matter value: the validator's small YAML
+    # reader then never has to guess what a value means.
+    yaml_quote: true
+    summary: "{{title}} ({{date}})"
+    sortable_fields: [date, title]
+    # Post photos in their own folder; same size limit and WebP shrinking
+    # as all uploads (media_libraries above).
+    media_folder: /site/img/blog
+    public_folder: /img/blog
+    fields:
+      - { name: title, label: Tytuł, widget: string, maxlength: 100 }
+      - { name: date, label: Data wpisu, widget: datetime, time_format: false, format: "YYYY-MM-DD", default: "{{now}}" }
+      - name: excerpt
+        label: Zajawka
+        widget: string
+        maxlength: 300
+        hint: "Jedno–dwa zdania na liście wpisów i w Google."
+      - name: cover
+        label: Zdjęcie na górze wpisu
+        widget: image
+        choose_url: false  # only uploaded photos, never an address from another site
+        hint: "Do 500 KB. Zostanie zmniejszone automatycznie."
+      - { name: cover_alt, label: Opis zdjęcia (dla osób niewidomych), widget: string, maxlength: 200 }
+      - name: body
+        label: Treść
+        widget: richtext
+        # Only what the site renders: headings (h2/h3; the title is the h1),
+        # bold, italic, lists, quotes, links and photos. No code blocks,
+        # tables or raw Markdown/HTML mode; links to other sites are allowed
+        # only as https:// or mailto: (checked when the site is built).
+        modes: [rich_text]
+        buttons: [bold, italic, link, heading-two, heading-three, bulleted-list, numbered-list, quote]
+        editor_components: [image]
+        linked_images: false
+        hint: "Linki tylko https:// albo adres e-mail. Filmy, mapy i formularze dodaje Aleksandra."
