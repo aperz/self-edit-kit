@@ -44,9 +44,28 @@ const MONTHS = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "l
 // Same allow-lists as checks/validate_content.py.
 // Inline markup in strona.json texts (unchanged from the old build.py).
 const SAFE_INLINE_URL = /^(https:\/\/|mailto:|tel:|\/|#)/;
-// Post bodies: links go out (https) or to e-mail; images come from our own /img/.
+// Post bodies: links go out (https), to e-mail, or to a page of this site
+// written from the site root ("/#terminy", "/blog/welna-czy-len/"); images
+// come from our own /img/.
 const SAFE_POST_LINK = /^(https:\/\/|mailto:)/i;
 const SAFE_POST_IMAGE = /^\/img\/[^?#]*$/;
+
+// An internal link: one leading "/" (so not "//host", which is another
+// site), no ".." (also not encoded as %2e%2e, which browsers decode), no
+// backslash (browsers read "/\host" as "//host"), and never into the editor.
+// Whether the page or section exists is checked on the built site
+// (check_site.py), where all pages and their ids are known.
+function isInternalPostLink(url) {
+  let path;
+  try { path = decodeURIComponent(url); } catch { return false; }
+  return path.startsWith("/") && !path.startsWith("//") && !path.includes("..") && !path.includes("\\")
+    && !/^\/admin(\/|$|[?#])/i.test(path);
+}
+// ".." in a path, also when written as %2e%2e (browsers decode it).
+function hasDotDot(url) {
+  try { return decodeURIComponent(url).includes(".."); } catch { return true; }
+}
+const isPostLink = (url) => SAFE_POST_LINK.test(url) || isInternalPostLink(url);
 
 const POSTS_GLOB = "content/blog/*.md";
 const isPost = (inputPath) => /^\.\/content\/blog\/[^/]+\.md$/.test(inputPath);
@@ -131,15 +150,16 @@ function configureMarkdown(md) {
   // First gate: markdown-it calls this for every link and image address
   // (after decoding entities, so "java&#115;cript:" is caught too). A
   // refused address is left as plain text.
-  md.validateLink = (url) => SAFE_POST_LINK.test(url) || (SAFE_POST_IMAGE.test(url) && !url.includes(".."));
+  md.validateLink = (url) => isPostLink(url) || (SAFE_POST_IMAGE.test(url) && !hasDotDot(url));
 
-  // Second gate: a link must not point at an image path and vice versa.
+  // Second gate: links and images each get their own rule (validateLink
+  // can't tell them apart).
   const render = (tokens, idx, options, env, self) => self.renderToken(tokens, idx, options);
   const linkOpen = md.renderer.rules.link_open || render;
   md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
     const href = tokens[idx].attrGet("href") || "";
-    if (!SAFE_POST_LINK.test(href)) {
-      throw new Error(`Link „${href}” we wpisie musi zaczynać się od https:// lub mailto:.`);
+    if (!isPostLink(href)) {
+      throw new Error(`Link „${href}” we wpisie musi zaczynać się od https://, mailto: albo / (strona tej witryny).`);
     }
     if (href.toLowerCase().startsWith("https://")) tokens[idx].attrSet("rel", "noopener");
     return linkOpen(tokens, idx, options, env, self);
@@ -147,7 +167,7 @@ function configureMarkdown(md) {
   const image = md.renderer.rules.image;
   md.renderer.rules.image = (tokens, idx, options, env, self) => {
     const src = tokens[idx].attrGet("src") || "";
-    if (!SAFE_POST_IMAGE.test(src) || src.includes("..")) {
+    if (!SAFE_POST_IMAGE.test(src) || hasDotDot(src)) {
       throw new Error(`Zdjęcie „${src}” we wpisie musi leżeć w folderze /img/ tej strony.`);
     }
     tokens[idx].attrSet("loading", "lazy");

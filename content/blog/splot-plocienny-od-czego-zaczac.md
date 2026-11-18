@@ -22,4 +22,4 @@ Splot płócienny to **pierwszy splot**, którego uczę na każdym warsztacie. W
 
 > Tkanie uczy cierpliwości szybciej niż jakakolwiek książka o cierpliwości.
 
-Chcesz spróbować pod okiem kogoś, kto już popełnił wszystkie błędy? Terminy warsztatów znajdziesz na stronie głównej, a pytania możesz wysłać na: [kontakt@example.com](mailto:kontakt@example.com).
+Chcesz spróbować pod okiem kogoś, kto już popełnił wszystkie błędy? Sprawdź [najbliższe terminy warsztatów](/#terminy) albo napisz: [kontakt@example.com](mailto:kontakt@example.com). A jeśli zastanawiasz się, z jakiej przędzy tkać, przeczytaj [Wełna czy len?](/blog/welna-czy-len/).

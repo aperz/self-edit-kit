@@ -77,20 +77,27 @@ cover_alt: "Motki wełny i lnu na drewnianym stole"
 After the header comes the text, in Markdown. Allowed: `## Heading` and
 `### Subheading` (not `#`, the title is the page heading), `**bold**`,
 `*italic*`, lists (`- ` and `1. `), quotes (`> `), links to other sites
-(`[text](https://…)`) or to an e-mail (`[text](mailto:…)`), and photos from
-the site: `![description](/img/blog/name.webp)`. A blank line starts a new
-paragraph.
+(`[text](https://…)`), to an e-mail (`[text](mailto:…)`) or to a page of
+this site written from the site root, and photos from the site:
+`![description](/img/blog/name.webp)`. A blank line starts a new paragraph.
+
+Links within the site: the dates `[terminy](/#terminy)` (also `/#o-mnie`,
+`/#oferta`, `/#kontakt`), the home page `/`, the blog list `/blog/`, another
+post `/blog/<adres>/`. Always start with `/`; the build makes them work
+wherever the site is published. A link to a post or section that doesn't
+exist fails the check: fix the address or drop the link.
 
 Not allowed, and the build refuses it: any HTML (`<iframe>`, `<script>`,
 `<div>`…), embeds (YouTube, Instagram, maps, forms), links that aren't
-`https://` or `mailto:`, photos from other sites, tables, code blocks, and
-extra header fields (`permalink`, `layout`, `tags`…). Links to pages of
-this site aren't supported in posts yet; mention the page in words instead.
-If she asks for any of these, it's "zmiana dla Aleksandry".
+`https://`, `mailto:` or `/…` on this site (no `tel:`, no links to
+`/admin/`), photos from other sites, tables, code blocks, and extra header
+fields (`permalink`, `layout`, `tags`…). If she asks for any of these,
+it's "zmiana dla Aleksandry".
 
 To change a post, edit its file; to remove one, delete its file (and its
 photos in `site/img/blog/` if no other post uses them). Renaming a file
-changes the post's address, so old links to it stop working: ask her first.
+changes the post's address, so old links to it stop working: ask her first,
+and update links to it from other posts (the check fails otherwise).
 
 If she gives you a text, keep her words. Fix obvious typos, add headings or
 lists only if she asks or agrees, and show her the text before publishing

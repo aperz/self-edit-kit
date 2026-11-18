@@ -70,9 +70,9 @@ root-absolute URL survives. A custom domain needs no change either.
 |---|---|---|
 | Form limits | `site/admin/config.yml` | wrong types, over-long texts, oversized photos (shrunk to WebP ≤1600 px) |
 | Instructions + denies | `CLAUDE.md`, `.claude/settings.json` | Claude touching anything but content (incl. `npm install`) |
-| Content validation | `checks/validate_content.py` | empty fields, price as text, bad dates/emails, unsafe links; in posts: any HTML, links other than `https://`/`mailto:`, photos not in `/img/`, missing or extra front-matter fields (`permalink`, `layout`…), `---js` front matter, non-post files in `content/blog/` |
+| Content validation | `checks/validate_content.py` | empty fields, price as text, bad dates/emails, unsafe links; in posts: any HTML, links other than `https://`/`mailto:`/root-relative (`/#terminy`, `/blog/<slug>/`; never `//…` or `/admin/`), links to missing posts/pages, photos not in `/img/`, missing or extra front-matter fields (`permalink`, `layout`…), `---js` front matter, non-post files in `content/blog/` |
 | Rendering | `eleventy.config.js` | the same dangers again, if validation were skipped: Markdown HTML off (escaped), no template language in posts (`{{ }}` is text), JS front matter and data files off, post address/layout fixed, unsafe links/images fail the build, only `templates/` + `content/blog/*.md` are read |
-| Checks | `checks/check_site.py` | changed protected files (hash manifest) or an unpinned new file in `templates/`, extra scripts/embeds, `javascript:` hrefs, root-absolute URLs, broken links, missing alt, >500 KB images, missing consent/legal links — on every visitor page incl. the blog |
+| Checks | `checks/check_site.py` | changed protected files (hash manifest) or an unpinned new file in `templates/`, extra scripts/embeds, `javascript:` hrefs, root-absolute URLs, broken links and missing `#sections` on the target page, links into `/admin/`, missing alt, >500 KB images, missing consent/legal links — on every visitor page incl. the blog |
 | Ruleset on `main` | GitHub | merging without a PR or with failing `site-checks`; protected paths without owner review (`CODEOWNERS`) |
 | Netlify build | `netlify.toml` | a broken build ever going live: production keeps the last good deploy |
 
@@ -113,11 +113,6 @@ pull request that holds anything but the entry's own files.
 - [ ] Claude, forbidden: "wstaw do wpisu film z YouTube" → declines; if an `<iframe>` is pushed anyway, `validate_content.py` fails and the merge is blocked
 
 ## Open questions for real clients
-
-- Links from a post to the site's own pages (`/#terminy`, another post)
-  aren't allowed yet (posts link only to `https://` and `mailto:`). They
-  could be: the relative-URL transform and the link check already handle
-  them.
 
 - Collaborator + Claude app: can a client with Write access use Claude on a
   repo where the owner installed the app, or does it need an organization?

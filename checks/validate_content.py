@@ -36,6 +36,7 @@ import re
 import sys
 from datetime import date
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTENT = ROOT / "content" / "strona.json"
@@ -104,7 +105,7 @@ def inline_links(text: str) -> None:
 
 def local_image(path: str, where: str) -> None:
     """An image path must point into our own /img/ folder, at a file that exists."""
-    if not path.startswith("/img/") or ".." in path or "?" in path or "#" in path:
+    if not path.startswith("/img/") or ".." in unquote(path) or "?" in path or "#" in path:
         raise ContentError(f"{where}: zdjęcie „{path}” musi leżeć w folderze /img/ tej strony.")
     if Path(path).suffix.lower() not in IMAGE_EXT:
         raise ContentError(f"{where}: „{path}” to nie jest zdjęcie (jpg, png, webp, gif, svg, avif).")
@@ -269,15 +270,46 @@ def validate_body(body: str, name: str) -> None:
         is_image, url = m.group(1) == "!", m.group(2).strip("<>")
         if is_image:
             local_image(url, name)
-        elif not POST_LINK.match(url):
-            raise ContentError(f"{name}: link „{url}” musi zaczynać się od https:// lub mailto:.")
+        else:
+            post_link(url, name)
     for m in MD_REF.finditer(body):
-        url = m.group(1).strip("<>")
-        if not POST_LINK.match(url):
-            local_image(url, name)  # the only other allowed target
+        # A reference can serve a link or an image; both start with "/" when
+        # local, and an image path is also a valid internal link target.
+        post_link(m.group(1).strip("<>"), name)
     for m in MD_AUTOLINK.finditer(body):
         if not POST_LINK.match(m.group(1)):
             raise ContentError(f"{name}: link „{m.group(1)}” musi zaczynać się od https:// lub mailto:.")
+
+
+def post_link(url: str, name: str) -> None:
+    """A link in a post: https://, mailto:, or a page of this site.
+
+    Internal links are written from the site root ("/#terminy",
+    "/blog/welna-czy-len/"); Eleventy makes them relative per page, so they
+    work in a subfolder too. Here we check that the page exists; whether a
+    #section exists is checked on the built site by check_site.py, which
+    knows every page's ids.
+    """
+    if POST_LINK.match(url):
+        return
+    path = unquote(url)  # browsers decode %2e%2e to "..", so check decoded
+    if not path.startswith("/") or path.startswith("//") or ".." in path or "\\" in path:
+        raise ContentError(f"{name}: link „{url}” musi zaczynać się od https://, mailto: albo / "
+                           f"(strona tej witryny, np. /#terminy).")
+    page = urlsplit(path).path
+    if re.match(r"^/admin(/|$)", page, re.IGNORECASE):
+        raise ContentError(f"{name}: link „{url}” prowadzi do edytora — tam linkować nie można.")
+    if page in ("/", "/blog", "/blog/"):
+        return
+    m = re.fullmatch(r"/blog/([^/]+)/?", page)
+    if m:
+        if not (BLOG / f"{m.group(1)}.md").is_file():
+            raise ContentError(f"{name}: link „{url}” prowadzi do wpisu, którego nie ma "
+                               f"(brak pliku content/blog/{m.group(1)}.md).")
+        return
+    target = SITE / page.lstrip("/")
+    if not (target.is_file() or (target / "index.html").is_file()):
+        raise ContentError(f"{name}: link „{url}” prowadzi do strony, której nie ma.")
 
 
 def validate_post(path: Path) -> None:

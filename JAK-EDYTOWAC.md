@@ -50,8 +50,10 @@ dużo naraz.
    i kliknij **Opublikuj**, tak samo jak przy zmianach na stronie głównej.
 
 Zdjęcia możesz wgrywać duże, prosto z telefonu: edytor sam je zmniejszy.
-Linki działają do innych stron (adres zaczynający się od https://) i do
-adresu e-mail.
+Linki działają do innych stron (adres zaczynający się od https://), do
+adresu e-mail i do Twojej strony: żeby odesłać do terminów, wpisz jako adres
+**/#terminy**, a do innego wpisu **/blog/** i jego adres, np.
+**/blog/welna-czy-len/**.
 
 ### Przez Claude
 

@@ -182,10 +182,11 @@ collections:
         widget: richtext
         # Only what the site renders: headings (h2/h3; the title is the h1),
         # bold, italic, lists, quotes, links and photos. No code blocks,
-        # tables or raw Markdown/HTML mode; links to other sites are allowed
-        # only as https:// or mailto: (checked when the site is built).
+        # tables or raw Markdown/HTML mode. Links: https://, mailto: or a
+        # page of this site from the root (/#terminy, /blog/<slug>/);
+        # checked when the site is built.
         modes: [rich_text]
         buttons: [bold, italic, link, heading-two, heading-three, bulleted-list, numbered-list, quote]
         editor_components: [image]
         linked_images: false
-        hint: "Linki tylko https:// albo adres e-mail. Filmy, mapy i formularze dodaje Aleksandra."
+        hint: "Linki: https://…, adres e-mail albo strona tej witryny, np. /#terminy lub /blog/welna-czy-len/. Filmy, mapy i formularze dodaje Aleksandra."

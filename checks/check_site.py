@@ -246,10 +246,21 @@ def check() -> tuple[list[str], list[str]]:
                 errors.append(f"{name}: adres {url} zaczyna się od „/” — nie zadziała, gdy strona leży w podfolderze.")
                 continue
             target = resolve_local(p, url)
-            if SITE.resolve() not in target.parents:
+            site_root = SITE.resolve()
+            if site_root not in target.parents:
                 errors.append(f"{name}: link {url} wychodzi poza katalog strony.")
+            elif target.relative_to(site_root).parts[0] in EXEMPT_DIRS:
+                # The editor is not a visitor page; nothing links into it.
+                errors.append(f"{name}: link {url} prowadzi do edytora (/admin/) — tam nie linkujemy.")
             elif not target.exists():
                 errors.append(f"{name}: link {url} prowadzi do nieistniejącego pliku.")
+            else:
+                # "../#terminy", "../blog/x/#y": the section must exist on the
+                # target page (same rule as "#x" links within a page).
+                fragment = urlsplit(url).fragment
+                if fragment and target in parsed and fragment not in parsed[target].ids:
+                    errors.append(f"{name}: link {url} wskazuje sekcję #{fragment}, której nie ma "
+                                  f"na stronie {target.relative_to(site_root).as_posix()}.")
 
         for src in pg.imgs_without_alt:
             errors.append(f"{name}: obrazek {src} nie ma opisu alt (potrzebny dla czytników ekranu).")
