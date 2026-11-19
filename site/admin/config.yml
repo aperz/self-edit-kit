@@ -40,9 +40,19 @@ slug:
 
 # Applies to every upload, the blog's media folder included.
 media_libraries:
+  # Stock photo search (Lorem Picsum, Unsplash, …) is on by default in Sveltia
+  # and inserts photos as links to another site. The checks refuse external
+  # images (they'd leak visitor IPs without consent), so a stock photo could be
+  # picked here and then fail at publish time. Switched off: only her uploads.
+  stock_assets:
+    providers: []
   default:
     config:
-      max_file_size: 512000  # 500 KB, same limit as the checks
+      # Only stops absurd files. The 500 KB rule is enforced on the RESULT by
+      # the checks; the transformations below shrink phone photos well under it.
+      # (Sveltia's docs don't say whether this limit applies before or after
+      # shrinking, so it must not be 500 KB or normal phone photos would bounce.)
+      max_file_size: 20000000  # 20 MB
       slugify_filename: true
       transformations:
         raster_image:
@@ -74,7 +84,7 @@ collections:
             widget: object
             fields:
               - { name: heading, label: Nagłówek, widget: string, maxlength: 60 }
-              - { name: photo, label: Zdjęcie, widget: image, hint: "Do 500 KB. Zostanie zmniejszone automatycznie." }
+              - { name: photo, label: Zdjęcie, widget: image, hint: "Możesz wgrać zdjęcie prosto z telefonu — zostanie zmniejszone automatycznie." }
               - { name: photo_alt, label: Opis zdjęcia (dla osób niewidomych), widget: string, maxlength: 200 }
               - name: text
                 label: Tekst
@@ -175,7 +185,7 @@ collections:
         label: Zdjęcie na górze wpisu
         widget: image
         choose_url: false  # only uploaded photos, never an address from another site
-        hint: "Do 500 KB. Zostanie zmniejszone automatycznie."
+        hint: "Możesz wgrać zdjęcie prosto z telefonu — zostanie zmniejszone automatycznie."
       - { name: cover_alt, label: Opis zdjęcia (dla osób niewidomych), widget: string, maxlength: 200 }
       - name: body
         label: Treść
