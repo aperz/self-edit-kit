@@ -1,17 +1,28 @@
 # self-edit-kit
 
-Starter repo for a client site the **client edits herself**, through two
-doors that end in the same place:
+Starter repo for a client site the **client edits herself** in the
+**editor** at `/admin/` ([Sveltia CMS](https://sveltiacms.app), pinned
+0.253.2): a Polish form over `content/strona.json` and the blog posts in
+`content/blog/`. Her whole routine is: log in → edit → **Zapisz** →
+**Opublikuj** (preview optional). The client guide is `JAK-EDYTOWAC.md`.
 
-1. **Editor** at `/admin/` ([Sveltia CMS](https://sveltiacms.app), pinned
-   0.253.2): a Polish form over `content/strona.json` and the blog posts in
-   `content/blog/`.
-2. **Claude Code on the web** (claude.ai/code, her own Pro plan): "dodaj
-   termin 23 stycznia" or "napisz wpis o…" → Claude edits the same files.
+Under the hood every save is a pull request with a Netlify preview, and
+Opublikuj merges it into `main`, which only works once the checks pass.
+She never needs to see GitHub.
 
-Either way the change becomes a pull request with a Netlify preview, and
-publishing it means merging it into `main`, which only works once the checks
-pass. Sample client: fictional "Pracownia Osnowa". Status: **demo on
+**Claude Code on the web is optional and off by default.** It works on the
+same files under `CLAUDE.md` + `.claude/settings.json`, but it shows the
+client GitHub pull requests and Merge buttons, which confused non-technical
+users. Enable it only for a client who's comfortable with that (install the
+Claude GitHub app, add a Claude section to her guide). The rules stay in the
+repo either way: they also govern the owner's own Claude sessions.
+
+**No one-click "Zapisz i opublikuj".** Sveltia's `direct_publish` commits
+straight to `main` without a pull request, which the `checks` ruleset
+rejects, so the first one-click save would fail. Opublikuj right after
+Zapisz is the equivalent: the editor waits for the checks, then merges.
+
+Sample client: fictional "Pracownia Osnowa". Status: **demo on
 Aleksandra's own GitHub account (aperz)**.
 
 ## Layout
@@ -97,20 +108,37 @@ pull request that holds anything but the entry's own files.
    - client: OAuth through Netlify (Netlify as OAuth provider) or the
      Sveltia CMS Authenticator Worker. GitHub has no browser-only (PKCE)
      login yet.
-6. Claude: install the Claude GitHub app on the repo from claude.ai/code.
-7. Live client site: add it to uptime/site monitoring.
+6. Netlify visitor access: protect nothing, or the client can't open the
+   preview links (team-wide "Netlify login" protection covers every project).
+7. Optional, only for a technical client: Claude — install the Claude GitHub
+   app on the repo from claude.ai/code and add a Claude section to her guide.
+8. Live client site: add it to uptime/site monitoring.
+9. Onboarding: a 10-minute screen-share where she publishes one change and
+   one blog post herself, plus `JAK-EDYTOWAC.md`.
+
+**Rule for every config change:** anything the editor's form lets her do
+must pass the checks. The checks exist to stop Claude or something unusual,
+never to reject a normal editor save. (Learned 2026-11-19: Sveltia's
+default stock-photo search inserted external URLs that the checks refuse,
+so the publish failed with no explanation in the editor. Fixed by
+`stock_assets.providers: []`.)
 
 ## Demo script
 
-- [ ] Editor: change the price → Save → PR `cms/strona/glowna` + Netlify preview → Publikuj → waits for checks → live
-- [ ] Editor: upload a large photo → shrunk to WebP, under 500 KB
-- [ ] Claude: "dodaj termin 23 stycznia, warsztat jednodniowy" → PR → preview → Merge → live
-- [ ] Claude, forbidden: "zmień kolor przycisku na zielony" → declines
-- [ ] Claude, forced: edit `templates/pages/index.njk` → denied by permissions; if pushed anyway, `site-checks` fails and the merge is blocked
-- [ ] Bad content (price as text) via Claude → build fails, PR blocked, live site unchanged
-- [ ] Editor: Blog → Nowy wpis → title "Wełna czy len?" → address `welna-czy-len`, cover photo shrunk to WebP → Save → PR + preview at `/blog/welna-czy-len/` → Publikuj
-- [ ] Claude: "napisz krótki wpis o tym, jak dbać o krosno, i dodaj to zdjęcie" → new file in `content/blog/` → PR → preview → Merge
-- [ ] Claude, forbidden: "wstaw do wpisu film z YouTube" → declines; if an `<iframe>` is pushed anyway, `validate_content.py` fails and the merge is blocked
+Editor (the client's path):
+
+- [ ] Change the price → Zapisz → Opublikuj straight away → waits for checks → live
+- [ ] Upload a phone photo (several MB) → accepted, shrunk to WebP under 500 KB
+- [ ] Blog → Nowy wpis → title "Wełna czy len?" → address `welna-czy-len`, uploaded cover → Zapisz → preview at `/blog/welna-czy-len/` → Opublikuj
+- [ ] No stock-photo tab in the image picker
+
+Optional Claude path (owner / technical clients):
+
+- [ ] "dodaj termin 23 stycznia, warsztat jednodniowy" → PR → preview → Merge → live
+- [ ] Forbidden: "zmień kolor przycisku na zielony" → declines
+- [ ] Forced: edit `templates/pages/index.njk` → denied by permissions; if pushed anyway, `site-checks` fails and the merge is blocked
+- [ ] Bad content (price as text) → build fails, PR blocked, live site unchanged
+- [ ] Forbidden: "wstaw do wpisu film z YouTube" → declines; if an `<iframe>` is pushed anyway, `validate_content.py` fails and the merge is blocked
 
 ## Open questions for real clients
 

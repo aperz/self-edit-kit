@@ -22,6 +22,10 @@ backend:
     uploadMedia: "Edytor: nowe zdjęcie {{path}}"
     deleteMedia: "Edytor: usunięto zdjęcie {{path}}"
 
+# No `direct_publish` ("Zapisz i opublikuj" in one click): it commits straight
+# to main without a pull request, and the `checks` ruleset rejects any commit
+# that hasn't passed site-checks, so the save would fail. Opublikuj right
+# after Zapisz does the same job: the editor waits for the checks, then merges.
 publish_mode: preview
 
 site_url: https://aperz.github.io/self-edit-kit/
