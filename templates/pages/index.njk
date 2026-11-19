@@ -1,0 +1,84 @@
+---
+permalink: index.html
+---
+{#-
+  Home page layout. PROTECTED: only Aleksandra changes this file.
+  Every {{ … }} is filled from content/strona.json (the `strona` data, see
+  eleventy.config.js). The texts are edited there, by the editor at /admin/
+  or by Claude, never here. `| safe` marks the filters that return HTML
+  (inline markup, paragraphs); everything else is escaped automatically.
+  Internal URLs start with "/" and are made relative at build time.
+-#}
+{%- set s = strona -%}
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ s.seo.title }}</title>
+  <meta name="description" content="{{ s.seo.description }}">
+  <link rel="stylesheet" href="/assets/style.css">
+  <!-- Cookie consent + Meta Pixel. Protected: keep this tag. -->
+  <script src="/assets/consent.js" defer></script>
+</head>
+<body>
+
+<!--
+  Page layout. PROTECTED: only Aleksandra changes this file.
+  Every value is filled from content/strona.json when the site is built. The
+  texts are edited there (by the editor at /admin/ or by Claude), never here.
+-->
+
+<header class="hero">
+  <h1>{{ s.hero.title }}</h1>
+  <p class="lead">{{ s.hero.lead }}</p>
+  <a class="button" href="#terminy">{{ s.hero.button }}</a>
+</header>
+
+<main>
+
+  <section id="o-mnie">
+    <h2>{{ s.o_mnie.heading }}</h2>
+    <img src="{{ s.o_mnie.photo | obraz }}" alt="{{ s.o_mnie.photo_alt }}" loading="lazy">
+    {{ s.o_mnie.text | akapity | safe }}
+  </section>
+
+  <section id="oferta">
+    <h2>{{ s.oferta.heading }}</h2>
+    <div class="cards">
+{%- for card in s.oferta.cards %}
+      <article class="card">
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.text | inline | safe }}</p>
+        <p class="price">{{ card.price | cena }}</p>
+      </article>
+{%- endfor %}
+    </div>
+  </section>
+
+  <section id="terminy">
+    <h2>{{ s.terminy.heading }}</h2>
+    <ul class="dates">
+{%- for t in s.terminy.items | po_dacie %}
+      <li><time datetime="{{ t.date }}">{{ t.date | zakres_dat(t.end_date) }}</time> — {{ t.text | inline | safe }}</li>
+{%- else %}
+      <li>Nowe terminy wkrótce.</li>
+{%- endfor %}
+    </ul>
+  </section>
+
+  <section id="kontakt">
+    <h2>{{ s.kontakt.heading }}</h2>
+    {{ s.kontakt.text | akapity | safe }}
+    <p>E-mail: <a href="mailto:{{ s.kontakt.email }}">{{ s.kontakt.email }}</a><br>Telefon: <a href="tel:{{ s.kontakt.phone | replace(" ", "") }}">{{ s.kontakt.phone }}</a></p>
+    <p>{{ s.kontakt.address }}</p>
+  </section>
+
+</main>
+
+<footer>
+  <p><a href="/blog/">Blog</a> · <a href="/polityka-prywatnosci.html">Polityka prywatności</a> · <a href="#" data-consent-open>Ustawienia cookies</a></p>
+</footer>
+
+</body>
+</html>

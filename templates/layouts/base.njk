@@ -1,0 +1,30 @@
+{#-
+  Shared frame of the blog pages (list and posts). PROTECTED: only Aleksandra
+  changes this file. Same head as the home page: style sheet, consent script
+  (cookie banner, RODO) and nothing else; same footer links.
+  Internal URLs start with "/" and are made relative at build time
+  (eleventy.config.js, "relative-urls"), so they work in a subfolder too.
+-#}
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} — {{ strona.hero.title }}</title>
+  <meta name="description" content="{{ excerpt if excerpt else strona.seo.description }}">
+  <link rel="stylesheet" href="/assets/style.css">
+  <!-- Cookie consent + Meta Pixel. Protected: keep this tag. -->
+  <script src="/assets/consent.js" defer></script>
+</head>
+<body>
+
+<nav class="topbar"><a href="/">{{ strona.hero.title }}</a> · <a href="/blog/">Blog</a></nav>
+
+{{ content | safe }}
+
+<footer>
+  <p><a href="/">Strona główna</a> · <a href="/blog/">Blog</a> · <a href="/polityka-prywatnosci.html">Polityka prywatności</a> · <a href="#" data-consent-open>Ustawienia cookies</a></p>
+</footer>
+
+</body>
+</html>

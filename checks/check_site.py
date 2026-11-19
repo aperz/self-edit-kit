@@ -6,12 +6,14 @@ job, so a failing run blocks the merge into main), as Netlify's build step
 (a failing run fails the deploy, so the live site keeps its last good
 version) and in the local pre-commit hook. Standard library only.
 
-    python3 build.py && python3 checks/check_site.py  # build, then check
+    python3 checks/validate_content.py && npx --no @11ty/eleventy && python3 checks/check_site.py
     python3 checks/check_site.py --update-manifest    # owner only: re-pin protected files
 
 It checks the BUILT site in public/, i.e. exactly what would be served,
 plus the hash manifest of protected source files. Content validation itself
-(field lengths, prices, dates) lives in build.py, which refuses to build.
+(field lengths, prices, dates, what a blog post may contain) lives in
+checks/validate_content.py, which runs before Eleventy renders anything.
+Every visitor page — home, blog list, each post — gets the same rules.
 
 Messages are in Polish because the client may read them in the PR. Errors
 (✗) fail the run; warnings (!) are printed but don't block.
@@ -26,7 +28,7 @@ from pathlib import Path
 from urllib.parse import urlsplit, unquote
 
 ROOT = Path(__file__).resolve().parent.parent
-SITE = ROOT / "public"  # the built output, see build.py
+SITE = ROOT / "public"  # the built output, see eleventy.config.js
 MANIFEST = ROOT / "checks" / "protected.sha256"
 
 # The editor page loads Sveltia from a CDN and is never shown to visitors
@@ -41,14 +43,21 @@ REQUIRED = [
     "dziekuje/index.html",
     "polityka-prywatnosci.html",
     "assets/wzornik-splotow.pdf",  # the gift the thank-you page hands out
+    "blog/index.html",             # linked from the home page footer
 ]
 
 # Files pinned by hash. A content edit never needs to touch these; changing
 # them takes the owner (CODEOWNERS review + --update-manifest). Paths are
 # relative to the repo root.
 PROTECTED = [
-    "templates/index.html",
-    "build.py",
+    "templates/pages/index.njk",
+    "templates/pages/blog.njk",
+    "templates/layouts/base.njk",
+    "templates/layouts/post.njk",
+    "eleventy.config.js",
+    "package.json",
+    "package-lock.json",
+    "checks/validate_content.py",
     "netlify.toml",
     "site/admin/index.html",
     "site/admin/config.yml",
@@ -65,6 +74,14 @@ PROTECTED = [
     ".githooks/pre-commit",
     "CLAUDE.md",
 ]
+
+# Folders whose every file must be in PROTECTED: a new layout or page
+# template is code, so adding one unpinned is an error, not a loophole.
+PROTECTED_DIRS = ["templates"]
+
+# Link schemes an <a> may use. Anything else (javascript:, data:, vbscript:)
+# would run code or smuggle content when clicked.
+LINK_SCHEMES = {"https", "http", "mailto", "tel"}
 
 MAX_IMAGE_BYTES = 500 * 1024
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"}
@@ -151,7 +168,7 @@ def check() -> tuple[list[str], list[str]]:
     warnings: list[str] = []
 
     if not (SITE / "index.html").is_file():
-        return [f"Brak zbudowanej strony w public/ — najpierw uruchom python3 build.py."], []
+        return [f"Brak zbudowanej strony w public/ — najpierw zbuduj stronę (python3 checks/validate_content.py && npx --no @11ty/eleventy)."], []
 
     for rel in REQUIRED:
         if not (SITE / rel).is_file():
@@ -164,6 +181,17 @@ def check() -> tuple[list[str], list[str]]:
             errors.append(f"Brakuje chronionego pliku {rel}.")
         elif pinned.get(rel) != sha256(f):
             errors.append(f"Zmieniono chroniony plik {rel} — to zmiana dla Aleksandry, nie treści.")
+    for d in PROTECTED_DIRS:
+        for f in sorted((ROOT / d).rglob("*")):
+            rel = f.relative_to(ROOT).as_posix()
+            if f.is_file() and rel not in PROTECTED:
+                errors.append(f"Nowy plik {rel} nie jest na liście chronionych — to zmiana dla Aleksandry.")
+
+    # Every post file must have become a page (a post Eleventy skipped would
+    # silently never appear).
+    for post in sorted((ROOT / "content" / "blog").glob("*.md")):
+        if not (SITE / "blog" / post.stem / "index.html").is_file():
+            errors.append(f"Wpis content/blog/{post.name} nie ma strony blog/{post.stem}/.")
 
     pages = sorted(p for p in SITE.rglob("*.html")
                    if p.relative_to(SITE).parts[0] not in EXEMPT_DIRS)
@@ -195,6 +223,9 @@ def check() -> tuple[list[str], list[str]]:
 
         for tag, attr, url in pg.refs:
             parts = urlsplit(url)
+            if parts.scheme and parts.scheme.lower() not in LINK_SCHEMES:
+                errors.append(f"{name}: <{tag}> używa niedozwolonego adresu {url[:60]}.")
+                continue
             if parts.scheme in ("mailto", "tel"):
                 continue
             if parts.scheme or url.startswith("//"):
@@ -207,16 +238,36 @@ def check() -> tuple[list[str], list[str]]:
                 if url != "#" and url[1:] not in pg.ids:
                     errors.append(f"{name}: kotwica {url} nie wskazuje żadnej sekcji.")
                 continue
+            if url.startswith("/"):
+                # The site is served both at a domain root (Netlify) and in a
+                # subfolder (GitHub Pages /self-edit-kit/); "/x" only works in
+                # the first. Eleventy's relative-urls transform rewrites these,
+                # so one surviving means the transform missed it.
+                errors.append(f"{name}: adres {url} zaczyna się od „/” — nie zadziała, gdy strona leży w podfolderze.")
+                continue
             target = resolve_local(p, url)
-            if SITE.resolve() not in target.parents:
+            site_root = SITE.resolve()
+            if site_root not in target.parents:
                 errors.append(f"{name}: link {url} wychodzi poza katalog strony.")
+            elif target.relative_to(site_root).parts[0] in EXEMPT_DIRS:
+                # The editor is not a visitor page; nothing links into it.
+                errors.append(f"{name}: link {url} prowadzi do edytora (/admin/) — tam nie linkujemy.")
             elif not target.exists():
                 errors.append(f"{name}: link {url} prowadzi do nieistniejącego pliku.")
+            else:
+                # "../#terminy", "../blog/x/#y": the section must exist on the
+                # target page (same rule as "#x" links within a page).
+                fragment = urlsplit(url).fragment
+                if fragment and target in parsed and fragment not in parsed[target].ids:
+                    errors.append(f"{name}: link {url} wskazuje sekcję #{fragment}, której nie ma "
+                                  f"na stronie {target.relative_to(site_root).as_posix()}.")
 
         for src in pg.imgs_without_alt:
             errors.append(f"{name}: obrazek {src} nie ma opisu alt (potrzebny dla czytników ekranu).")
 
-        for d in pg.dates:
+        # Past dates only matter on the home page (workshop dates); a blog
+        # post's date is supposed to be in the past.
+        for d in (pg.dates if name.as_posix() == "index.html" else []):
             if d[:10] < today:
                 warnings.append(f"{name}: termin {d} już minął — może warto go usunąć.")
 

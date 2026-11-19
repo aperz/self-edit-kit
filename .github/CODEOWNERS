@@ -1,9 +1,11 @@
 # Pull requests touching these paths need the owner's approval (the ruleset
-# on main requires code-owner review). Content edits — content/strona.json and
-# site/img/uploads/ — are not listed, so the editor's and Claude's content
-# PRs only need the checks to pass.
+# on main requires code-owner review). Content edits — content/strona.json,
+# content/blog/, site/img/uploads/ and site/img/blog/ — are not listed, so the
+# editor's and Claude's content PRs only need the checks to pass.
 /templates/                     @aperz
-/build.py                       @aperz
+/eleventy.config.js             @aperz
+/package.json                   @aperz
+/package-lock.json              @aperz
 /netlify.toml                   @aperz
 /site/admin/                    @aperz
 /site/assets/                   @aperz
