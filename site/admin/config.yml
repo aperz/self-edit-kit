@@ -26,7 +26,13 @@ backend:
 # to main without a pull request, and the `checks` ruleset rejects any commit
 # that hasn't passed site-checks, so the save would fail. Opublikuj right
 # after Zapisz does the same job: the editor waits for the checks, then merges.
-publish_mode: preview
+# allow_incomplete_drafts: false: the editor refuses to save while a required
+# field is empty and marks it on the form. Sveltia's default lets drafts be
+# saved half-filled, but every save is a pull request that the checks
+# reject ("pole … jest puste"), with the reason only visible on GitHub.
+publish_mode:
+  type: preview
+  allow_incomplete_drafts: false
 
 site_url: https://aperz.github.io/self-edit-kit/
 display_url: https://aperz.github.io/self-edit-kit/
@@ -88,7 +94,7 @@ collections:
             widget: object
             fields:
               - { name: heading, label: Nagłówek, widget: string, maxlength: 60 }
-              - { name: photo, label: Zdjęcie, widget: image, hint: "Możesz wgrać zdjęcie prosto z telefonu — zostanie zmniejszone automatycznie." }
+              - { name: photo, label: Zdjęcie, widget: image, choose_url: false, accept: "image/jpeg,image/png,image/webp,image/heic,image/avif", hint: "Możesz wgrać zdjęcie prosto z telefonu — zostanie zmniejszone automatycznie." }
               - { name: photo_alt, label: Opis zdjęcia (dla osób niewidomych), widget: string, maxlength: 200 }
               - name: text
                 label: Tekst
@@ -189,6 +195,7 @@ collections:
         label: Zdjęcie na górze wpisu
         widget: image
         choose_url: false  # only uploaded photos, never an address from another site
+        accept: image/jpeg,image/png,image/webp,image/heic,image/avif  # no GIFs: animations aren't shrunk and fail the 500 KB check
         hint: "Możesz wgrać zdjęcie prosto z telefonu — zostanie zmniejszone automatycznie."
       - { name: cover_alt, label: Opis zdjęcia (dla osób niewidomych), widget: string, maxlength: 200 }
       - name: body
@@ -204,3 +211,6 @@ collections:
         editor_components: [image]
         linked_images: false
         hint: "Linki: https://…, adres e-mail albo strona tej witryny, np. /#terminy lub /blog/welna-czy-len/. Filmy, mapy i formularze dodaje Aleksandra."
+        pattern:
+          - '^(?![\s\S]*<[A-Za-z!/])(?![\s\S]*\]\(\s*<?(?!https://|mailto:|/(?!/))[^)\s]*)(?![\s\S]*\]\(\s*<?/admin)[\s\S]*$'
+          - "W treści jest kod HTML albo link, który nie zaczyna się od https://, adresu e-mail (mailto:) lub / (strona tej witryny, np. /#terminy). Do edytora (/admin/) linkować nie można."
