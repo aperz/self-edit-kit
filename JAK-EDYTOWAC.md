@@ -40,6 +40,10 @@ Chcesz najpierw zobaczyć, jak to wygląda? Po zapisaniu, w zakładce
    **Szkice**), a potem kliknij **Opublikuj**.
 
 Zdjęcia możesz wgrywać prosto z telefonu: edytor sam je zmniejszy.
+Animacje (GIF) nie są obsługiwane — wgraj zwykłe zdjęcie.
+
+Jeśli w formularzu czegoś brakuje albo coś jest nie tak, edytor nie pozwoli zapisać
+i pokaże przy polu, co poprawić.
 
 Linki działają do innych stron (adres zaczynający się od https://), do
 adresu e-mail i do Twojej strony: żeby odesłać do terminów, wpisz jako adres
